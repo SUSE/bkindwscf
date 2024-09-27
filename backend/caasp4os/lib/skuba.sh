@@ -160,6 +160,23 @@ skuba_updates() {
     done
 }
 
+skuba_raise_pid_limit() {
+    # Usage:
+    # skuba_raise_pid_limit <target>
+    # skuba_raise_pid_limit all
+
+    # from https://confluence.suse.com/pages/viewpage.action?pageId=565905160
+    # setting pids_limit = 4096 which is the default number for services
+
+    local target="${1:-all}"
+    local action="${2:-disable}"
+
+    _define_node_group "$target"
+    for n in $GROUP; do
+        _ssh2 "$n" "echo 'pids_limit = 4096 # max num proc in container' | sudo tee /etc/crio/crio.conf.d/02-cap.conf && sudo systemctl restart crio"
+    done
+}
+
 _init_control_plane() {
     skuba_container skuba cluster init \
                     --cloud-provider openstack \
